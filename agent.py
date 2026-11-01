@@ -115,6 +115,6 @@ while True:
         print(f"Claude: {agent_antwort(messages)}")
     except anthropic.RateLimitError as e:
         print(f"  [Rate-Limit-Fehler: {e}]")
-    except anthropic.APIError as e:
+    except anthropic.APIConnectionError as e:
         print(f"  [API-Verbindungsfehler: {e}]")
     
