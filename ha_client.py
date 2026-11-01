@@ -42,6 +42,33 @@ def get_sensors(suchwort=""):
                     })
     return sensoren
 
+def ha_post(pfad, daten):
+    """Schickt eine POST-Anfrage mit JSON-Daten an HA."""
+    antwort = requests.post(f"{HA_URL}{pfad}", headers=HEADERS, json=daten)
+    antwort.raise_for_status()
+    return antwort.json()
+
+
+def set_light(entity_id, an, helligkeit=None, farbtemperatur=None):
+    """Schaltet ein Licht an oder aus. Helligkeit optional in Prozent (1–100).
+      Farbtemperatur optional in Kelvin (2700-6500), eine kleinere Zahl bedeutet wärmeres Licht, eine größere kühleres Licht."""
+    erlaubte_ids = [licht["entity_id"] for licht in get_lights()]
+    if entity_id not in erlaubte_ids:
+        return {"fehler": f"Unbekanntes Licht: {entity_id}. Verfügbar: {erlaubte_ids}"}
+
+    if an:
+        daten = {"entity_id": entity_id}
+        if helligkeit is not None:
+            daten["brightness_pct"] = helligkeit
+        if farbtemperatur is not None:
+            daten["color_temp_kelvin"] = farbtemperatur
+        ha_post("/api/services/light/turn_on", daten)
+    else:
+        ha_post("/api/services/light/turn_off", {"entity_id": entity_id})
+
+    return {"ok": True, "entity_id": entity_id, "an": an}
+
+
 
 if __name__ == "__main__":          # läuft nur, wenn du DIESE Datei direkt startest
     for licht in get_lights():

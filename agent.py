@@ -1,10 +1,10 @@
 import json
 import anthropic
-from ha_client import get_lights, get_sensors   # deine eigenen Funktionen!
+from ha_client import get_lights, get_sensors, set_light   # eigene Funktionen!
 
 client = anthropic.Anthropic()
 
-# 1. Tools beschreiben: Claude sieht NUR diese Beschreibung, nicht deinen Code
+# 1. Tools beschreiben: Claude sieht nur die Beschreibungen
 tools = [
     {
         "name": "get_sensors",
@@ -27,12 +27,32 @@ tools = [
             "required": [],
         },
     },
+    {
+        "name": "set_light",
+        "description": "Schaltet ein Licht an oder aus. Verwende die entity_id aus get_lights. "
+                       "Helligkeit nur angeben, wenn der Nutzer sie nennt."
+                       "Farbtemperatur nur angeben, wenn der Nutzer sie nennt. Eine kleinere Zahl bedeutet wärmeres Licht, eine größere kühleres Licht.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "entity_id": {"type": "string", "description": "z.B. light.stehlampe"},
+                "an": {"type": "boolean", "description": "true = an, false = aus"},
+                "helligkeit": {"type": "integer", "minimum": 1, "maximum": 100,
+                               "description": "Helligkeit in Prozent, optional"},
+                "farbtemperatur": {"type": "integer", "minimum": 2700 , "maximum": 6500,
+                                   "description": "Farbtemperatur in Kelvin, optional"},
+            },
+            "required": ["entity_id", "an"],
+        },
+    },
+
 ]
 
 # 2. Name → echte Funktion zuordnen
 funktionen = {
     "get_sensors": get_sensors,
-    "get_lights": get_lights
+    "get_lights": get_lights,
+    "set_light": set_light,
 }
 
 frage = input("Du: ")
