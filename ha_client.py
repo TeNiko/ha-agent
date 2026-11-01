@@ -9,8 +9,14 @@ HEADERS = {"Authorization": f"Bearer {os.getenv('HA_TOKEN')}"}
 
 def ha_get(pfad):
     """Schickt eine GET-Anfrage an HA und gibt die Antwort als Python-Daten zurück."""
-    antwort = requests.get(f"{HA_URL}{pfad}", headers=HEADERS)
+    antwort = requests.get(f"{HA_URL}{pfad}", headers=HEADERS, timeout=10)
     antwort.raise_for_status()      # wirft einen Fehler bei 401, 404 usw.
+    return antwort.json()
+
+def ha_post(pfad, daten):
+    """Schickt eine POST-Anfrage mit JSON-Daten an HA."""
+    antwort = requests.post(f"{HA_URL}{pfad}", headers=HEADERS, json=daten, timeout=10)
+    antwort.raise_for_status()
     return antwort.json()
 
 
@@ -41,12 +47,6 @@ def get_sensors(suchwort=""):
                     "einheit": geraet["attributes"].get("unit_of_measurement","")
                     })
     return sensoren
-
-def ha_post(pfad, daten):
-    """Schickt eine POST-Anfrage mit JSON-Daten an HA."""
-    antwort = requests.post(f"{HA_URL}{pfad}", headers=HEADERS, json=daten)
-    antwort.raise_for_status()
-    return antwort.json()
 
 
 def set_light(entity_id, an, helligkeit=None, farbtemperatur=None):
